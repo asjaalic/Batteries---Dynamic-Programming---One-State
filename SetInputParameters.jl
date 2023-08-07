@@ -102,7 +102,7 @@ function set_vector!(paramDict, vector)
   number = length(items)
   vec = zeros(Int64,number)
   for i=1:number
-    vec[i] = parse(int64,items[i])
+    vec[i] = parse(Int64,items[i])
   end
   
   return vec
@@ -128,17 +128,11 @@ function read_parameters_from_config_file(file = "configParameters.in")
   #paramDict = read_type_to_dict(file,Number)
   paramDict = read_type_to_dict(file, Any)
   
-  integers =[:NMonths :disc]  #NYears
+  integers =[:NStages]  #NYears
   paramDict = set_integers!(paramDict, integers)
 
-  floats =[:NYears :Big :NHoursStep :conv]
+  floats =[:Big :NHoursStage :conv]
   paramDict = set_floats!(paramDict,floats)
-
-
-  # scrivere codice "if" fino a quando il resto tra NYears*12/Nmonths non sia nullo - chiedere di cambiare dati
-  paramDict[:NStages] = Int(paramDict[:NYears]*12/paramDict[:NMonths])
-  paramDict[:NSteps] = Int(paramDict[:NYears]*730/paramDict[:NHoursStep])    #8760
-  paramDict[:NHoursStage] = Int(paramDict[:NSteps]/paramDict[:NStages])
 
   inputData = InputParam(;paramDict...)
 
@@ -194,16 +188,6 @@ function set_solverParameters()
   return solverParameters
 end
 
-
-function set_envelopes(file = "runCase.in")
-
-  return envParam(
-    n_envelopes,
-    low_x,
-    low_y,
-   )
-end
-
 # MODE SETTING
 function read_runMode_file(file = "runMode.in")
 
@@ -247,18 +231,21 @@ end
 
 function read_Battery_from_file(file = "BatteryCharacteristics.in")
 
+  #file = "BatteryCharacteristics.in"
+  
   paramDict = read_type_to_dict(file, Any)
   println("Parameters to be used:", paramDict)
-  integers =[:Nfull]
-  paramDict = set_integers!(paramDict,integers)
 
   floats =[:min_SOC :max_SOC :Eff_charge :Eff_discharge :min_P :max_P :max_SOH :min_SOH]
   paramDict = set_floats!(paramDict,floats)
 
-  vector = [:DoD :NCycles]
-  paramDict = set_vectors!(paramDict,vector)
+  vec1 = :DoD
+  DoD = set_vector!(paramDict,vec1)
 
-  Battery = BatteryParam(;paramDict...)
+  vec2 = :NCycles
+  NCycles = set_vector!(paramDict,vec2)
+
+  Battery = BatteryParam(;paramDict...,DoD, NCycles)
 
   return Battery
 end

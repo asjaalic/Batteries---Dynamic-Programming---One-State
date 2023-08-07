@@ -4,12 +4,9 @@
 
 function data_saving(InputParameters::InputParam,ResultsOpt::Results)
 
-    @unpack (NYears, NMonths, NStages, NSteps, Big, NHoursStep, NHoursStage, disc) = InputParameters;
-    #@unpack (charge,discharge, soc, soh_final, soh_initial, revenues_per_stage, deg, soc_aux, p_aux, d, deg, d_1,d_2,d_3, deg_1,deg_2,deg_3,u1,u2, gain_stage, cost_rev, deg_stage) = ResultsOpt;        #cum_energy,
-    #@unpack (charge,discharge, soc, soh_final, soh_initial, revenues_per_stage, deg, soc_aux, p_aux, d, deg, d_1,d_2, deg_1,deg_2,u, gain_stage, cost_rev, deg_stage) = ResultsOpt;        #cum_energy,
-
-    @unpack (charge,discharge, soc,soc_quad, soh_final, soh_initial, revenues_per_stage, deg, x, y, z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, gain_stage, cost_rev, deg_stage) = ResultsOpt;  
-    @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull ) = Battery ; 
+    @unpack (NStages, Big, NHoursStage, conv) = InputParameters;
+  
+    @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH ) = Battery ; 
 
     hour=string(now())
     a=replace(hour,':'=> '-')

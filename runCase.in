@@ -1,6 +1,6 @@
-DataPath = C:\\GitSource-Batteries\\Batteries - exact - inequalities
-InputPath = C:\\GitSource-Batteries\\Batteries - exact - inequalities
-ResultPath = C:\\GitSource-Batteries\\Batteries - exact - inequalities
+DataPath = C:\\GitSource-Batteries\\Batteries - Dynamic Programming - One state
+InputPath = C:\\GitSource-Batteries\\Batteries - Dynamic Programming - One state
+ResultPath = C:\\GitSource-Batteries\\Batteries - Dynamic Programming - One state
 #ending to case name 
-CaseName = _Version_exact_inequalities
+CaseName = _Dynamic_Programmin_One_State
 

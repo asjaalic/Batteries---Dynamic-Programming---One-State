@@ -13,14 +13,11 @@ using Parameters
 using Dates
 using CSV
 
-
-import Base.show
-
 # Calls the other Julia files
 include("Structures.jl")
 include("SetInputParameters.jl")
 include("DynamicProgramming.jl")
-include("Saving in xlsx.jl")
+#include("Saving in xlsx.jl")
 
 date = string(today())
 
@@ -36,23 +33,23 @@ to = TimerOutput()
   # Set run mode (how and what to run) and Input parameters
   runMode = read_runMode_file()
   InputParameters = set_parameters(runMode, case)
-  @unpack (NStages, NStates, NHoursStage, Big)= InputParameters;
-
-  # Set solver parameters (Cplex etc)
-  SolverParameters = set_solverParameters()
+  @unpack (NStages, NHoursStage, Big)= InputParameters;
 
   # Read power prices from a file [€/MWh]
-  priceYear = "2022"
-  Power_prices = read_csv(" Prezzi mezz'ora 2022.csv",case.DataPath)                       # valori alla mezz'ora
-  #Battery_prices = read_csv("Cost_battery.csv",case.DataPath)                             #  cost for battery replacement for each half hour
-  PV_production = read_csv("PV_production.csv",case.DataPath)                              # potenza da PV (0.75MW)         
+  Pp1 = read_csv("prices_2020_8760.csv",case.DataPath)                                # valori all'ora
+  Pp2 = read_csv("prices_2021_8760.csv",case.DataPath)
+  Pp3 = read_csv("prices_2022_8760.csv",case.DataPath)
+  Battery_prices = read_csv("Battery_decreasing_prices.csv",case.DataPath)                             #  cost for battery replacement for each half hour
+  Power_prices = vcat(Pp1',Pp2',Pp3')
+  cost_Battery = zeros(NStages)
+  a = Int(NStages/4380)
+  for i = 1:a
+    cost_Battery[(i-1)*4380+1:4380*i] .= Battery_prices[i]
+  end
 
   # Upload battery's characteristics
   Battery = set_battery_system(runMode, case)
-  @unpack (power_Capacity, energy_Capacity, Eff_charge, Eff_discharge, costBattery, DoD, NCycles) = Battery; 
-
-  # DEFINE STATE VARIABLES - STATE OF CHARGES SOC [MWh]
-  state_variables = define_state_variables(InputParameters, Battery)
+  @unpack (min_SOC, max_SOC, Eff_charge, min_P,max_P, max_SOH, min_SOH, DoD, NCycles) = Battery;  #, DoD, NCycles
 
   # Where and how to save the results
   FinalResPath= set_run_name(case, ResultPath, InputParameters)
@@ -66,23 +63,14 @@ end
     save(joinpath(FinalResPath,"InputParameters.jld"), "InputParameters" ,InputParameters)
     save(joinpath(FinalResPath,"BatteryCharacteristics.jld"), "BatteryCharacteristics" ,Battery)
     save(joinpath(FinalResPath,"PowerPrices.jld"),"PowerPrices",Power_prices)
-    save(joinpath(FinalResPath,"PVproduction.jld"),"PVprod",PV_production)
 end
-
-configurations=[]
-push!(configurations, " Stand-alone system BESS")
-push!(configurations, " BESS with PV")
-push!(configurations, " BESS with PV and maximum Grid capacity")
-push!(configurations, " BESS with PV - only discharge")
 
 # DYNAMIC PROGRAMMING
-if runMode.dynamicProgramming
-    println("Solving Dynamic Pogramming")
-    ResultsDP = DP(InputParameters, Battery, state_variables, runMode, Power_prices, PV_production)   #configurations
+@timeit to "Solving Dynamic Pogramming" begin
+    ResultsDP = DP(InputParameters, Battery, Power_prices)   #configurations
     save(joinpath(FinalResPath, "dp_Results.jld"), "dp_Results", ResultsDP) 
-    else
-    println("Solved without dynamic programming.")
 end
+
 
 # SAVE OTIMAL-PATH DATA IN EXCEL FILES
 if runMode.excel_savings
