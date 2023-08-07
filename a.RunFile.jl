@@ -7,25 +7,20 @@ using CPLEX
 using MathOptInterface
 using JLD
 using TimerOutputs
-using Distributions
 using DataFrames
 using XLSX
 using Parameters
 using Dates
 using CSV
-using Plots
-using Combinatorics
-using Rainflow
-using Base
+
 
 import Base.show
 
 # Calls the other Julia files
 include("Structures.jl")
 include("SetInputParameters.jl")
-include("dynamicProgramming.jl")
+include("DynamicProgramming.jl")
 include("Saving in xlsx.jl")
-include("Plots.jl")
 
 date = string(today())
 
